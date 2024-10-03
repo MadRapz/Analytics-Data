@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from babel.numbers import format_currency
 
 # Load the cleaned data
-day_cleaned = pd.read_csv("D:\Kuliah\Bangkit\Task\AnalisDataProjek\submission\data\day_cleaned.csv")
-hour_cleaned = pd.read_csv("D:\Kuliah\Bangkit\Task\AnalisDataProjek\submission\data\hour_cleaned.csv")
+day_cleaned = pd.read_csv("..\submission\data\day_cleaned.csv")
+hour_cleaned = pd.read_csv("..\submission\data\hour_cleaned.csv")
 
 # Convert date columns to datetime format
 day_cleaned['dteday'] = pd.to_datetime(day_cleaned['dteday'])
@@ -15,7 +15,7 @@ hour_cleaned['dteday'] = pd.to_datetime(hour_cleaned['dteday'])
 
 with st.sidebar:
     # Display company logo
-    st.image("D:\Kuliah\Bangkit\Task\AnalisDataProjek\submission\dashboard\8-bit City_1920x1080.jpg")
+    st.image("..\submission\dashboard\8-bit City_1920x1080.jpg")
     
     # Date range selection
     min_date = day_cleaned['dteday'].min()
@@ -50,9 +50,11 @@ windspeed_rental_corr = correlation_day.at['windspeed', 'cnt']
 
 # Display correlation results with descriptions
 st.write("Detailed Correlation Insights for Daily Rentals:")
-st.write(f"**Temperature and Rental Count Correlation:** {temp_rental_corr:.2f} (Strongest positive correlation implies warmer weather increases rentals.)")
-st.write(f"**Humidity and Rental Count Correlation:** {hum_rental_corr:.2f} (Negative correlation indicates higher humidity reduces rentals.)")
-st.write(f"**Wind Speed and Rental Count Correlation:** {windspeed_rental_corr:.2f} (Slight negative correlation suggests higher wind speeds might decrease rentals.)")
+st.write(f"**Temperature and Rental Count Correlation:** {temp_rental_corr:.2f}<br> (Strongest positive correlation implies warmer weather increases rentals.)", unsafe_allow_html=True)
+st.write(f"**Humidity and Rental Count Correlation:** {hum_rental_corr:.2f}<br> (Negative correlation indicates higher humidity reduces rentals.)", unsafe_allow_html=True)
+st.write(f"**Wind Speed and Rental Count Correlation:** {windspeed_rental_corr:.2f}<br> (Slight negative correlation suggests higher wind speeds might decrease rentals.)", unsafe_allow_html=True)
+
+st.write(f"<br>", unsafe_allow_html=True)
 
 # If needed, provide more detailed insights
 if temp_rental_corr > 0.5:
@@ -79,9 +81,9 @@ windspeed_hourly_corr = correlation_hour.at['windspeed', 'cnt']
 
 # Display correlation results with descriptions
 st.write("Detailed Correlation Insights for Hourly Rentals:")
-st.write(f"**Temperature and Rental Count Correlation:** {temp_hourly_corr:.2f} (Indicates that as temperature increases, hourly rentals generally increase.)")
-st.write(f"**Humidity and Rental Count Correlation:** {hum_hourly_corr:.2f} (Shows a negative correlation, suggesting that higher humidity may deter hourly rentals.)")
-st.write(f"**Wind Speed and Rental Count Correlation:** {windspeed_hourly_corr:.2f} (A negative correlation indicates that stronger winds may reduce the comfort or safety of biking, thus lowering rentals.)")
+st.write(f"**Temperature and Rental Count Correlation:** {temp_hourly_corr:.2f}<br> (Indicates that as temperature increases, hourly rentals generally increase.)", unsafe_allow_html=True)
+st.write(f"**Humidity and Rental Count Correlation:** {hum_hourly_corr:.2f}<br> (Shows a negative correlation, suggesting that higher humidity may deter hourly rentals.)", unsafe_allow_html=True)
+st.write(f"**Wind Speed and Rental Count Correlation:** {windspeed_hourly_corr:.2f}<br> (A negative correlation indicates that stronger winds may reduce the comfort or safety of biking, thus lowering rentals.)", unsafe_allow_html=True)
 
 # Provide recommendations or further analysis suggestions based on correlations
 if temp_hourly_corr > 0.5:
@@ -118,7 +120,7 @@ st.write(f"**Highest Median Rentals:** {weather_conditions.get(max_weather_condi
 st.write(f"**Lowest Median Rentals:** {weather_conditions.get(min_weather_condition, 'N/A')} ({min_rentals} rentals)")
 
 # Additional insights
-st.write("Insights:")
+st.write("Insight:")
 if max_weather_condition == 1:
     st.write("Clear weather significantly increases bike rentals, suggesting good weather encourages biking.")
 if min_weather_condition == 3 or min_weather_condition == 4:
@@ -159,14 +161,19 @@ if min_hourly_weather_condition == 3 or min_hourly_weather_condition == 4:
 
 #==========================================================================================================#
 
-# Daily Bike Rentals by Day Type
-st.subheader("Daily Bike Rentals by Day Type")
-rentals_by_day = filtered_day.groupby(['holiday', 'weekday'])['cnt'].mean().reset_index()
-plt.figure(figsize=(12, 6))
-sns.barplot(x='weekday', y='cnt', hue='holiday', data=rentals_by_day)
-plt.title('Average Daily Rentals by Day Type')
-plt.xlabel('Weekday (0: Sunday, 6: Saturday)')
-plt.ylabel('Average Number of Rentals')
+# Daily Bike Rentals by Day Type using 'workingday' and 'holiday'
+st.subheader("Daily Bike Rentals by Day Type (Using Working Day and Holiday)")
+
+# Grouping by 'holiday' and 'workingday' for day data (excluding 'weekday')
+rentals_by_day = filtered_day.groupby(['holiday', 'workingday'])['cnt'].mean().reset_index()
+
+# Visualization for the day dataset using only 'holiday' and 'workingday'
+plt.figure(figsize=(8, 5))
+sns.barplot(x='workingday', y='cnt', hue='holiday', data=rentals_by_day)
+plt.title('Rata-rata Penyewaan Sepeda pada Hari Kerja dan Libur (Harian)')
+plt.xlabel('Working Day (1 = Ya, 0 = Tidak)')
+plt.ylabel('Rata-rata Penyewaan')
+plt.legend(title='Holiday (1 = Ya, 0 = Tidak)')
 st.pyplot(plt)
 
 # Calculate the overall average rentals for holidays and non-holidays
@@ -181,7 +188,7 @@ if average_rentals_non_holiday > 0:
 st.write("Bike Rental Patterns by Day Type:")
 st.write(f"**Average Rentals on Holidays:** {average_rentals_holiday:.2f} bikes")
 st.write(f"**Average Rentals on Non-Holidays:** {average_rentals_non_holiday:.2f} bikes")
-if percentage_change is not None:
+if average_rentals_non_holiday > 0:
     st.write(f"**Percentage Change in Rentals from Non-Holidays to Holidays:** {percentage_change:.2f}%")
 
 # Provide insights based on the data
@@ -192,17 +199,22 @@ elif percentage_change < 0:
     st.write("Bike rentals decrease on holidays, which may indicate closures, reduced demand, or a shift in user behavior.")
 else:
     st.write("No significant change in bike rentals between holidays and non-holidays.")
-
+    
 #==========================================================================================================#
 
-# Hourly Bike Rentals by Day Type
-st.subheader("Hourly Bike Rentals by Day Type")
-rentals_by_hour = filtered_hour.groupby(['holiday', 'weekday'])['cnt'].mean().reset_index()
-plt.figure(figsize=(12, 6))
-sns.barplot(x='weekday', y='cnt', hue='holiday', data=rentals_by_hour)
-plt.title('Average Hourly Rentals by Day Type')
-plt.xlabel('Weekday (0: Sunday, 6: Saturday)')
-plt.ylabel('Average Number of Rentals')
+# Hourly Bike Rentals by Day Type using 'workingday' and 'holiday'
+st.subheader("Hourly Bike Rentals by Day Type (Using Working Day and Holiday)")
+
+# Grouping by 'holiday' and 'workingday' for hour data (excluding 'weekday')
+rentals_by_hour = filtered_hour.groupby(['holiday', 'workingday'])['cnt'].mean().reset_index()
+
+# Visualization for the hour dataset using only 'holiday' and 'workingday'
+plt.figure(figsize=(8, 5))
+sns.barplot(x='workingday', y='cnt', hue='holiday', data=rentals_by_hour)
+plt.title('Rata-rata Penyewaan Sepeda pada Hari Kerja dan Libur (Per Jam)')
+plt.xlabel('Working Day (1 = Ya, 0 = Tidak)')
+plt.ylabel('Rata-rata Penyewaan')
+plt.legend(title='Holiday (1 = Ya, 0 = Tidak)')
 st.pyplot(plt)
 
 # Calculate the overall average rentals for holidays and non-holidays
@@ -220,6 +232,7 @@ if percentage_change_hourly is not None:
     st.write(f"**Percentage Change in Hourly Rentals from Non-Holidays to Holidays:** {percentage_change_hourly:.2f}%")
 
 # Provide strategic insights based on the data
+st.write("Insights:")
 if percentage_change_hourly and percentage_change_hourly > 0:
     st.write("There is an increase in bike rentals per hour on holidays, suggesting higher leisure activity. Consider increasing available bikes and staffing on these days.")
 elif percentage_change_hourly and percentage_change_hourly < 0:
